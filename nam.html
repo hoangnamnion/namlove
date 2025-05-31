@@ -441,58 +441,33 @@ document.addEventListener('touchend', () => {
                 console.log('Đang cố gắng phát nhạc:', galaxyData.song);
                 
                 try {
-                    // Tạo audio context để tối ưu hóa
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    const audioContext = new AudioContext();
-                    
-                    // Cấu hình audio để load nhanh hơn
+                    // Cấu hình audio
                     audio.preload = 'auto';
                     audio.loop = true;
-                    audio.autoplay = true;
                     audio.controls = false;
                     audio.style.display = 'none';
 
-                    // Tạo buffer để cache audio
-                    let audioBuffer = null;
-                    let isAudioLoaded = false;
+                    // Hàm phát nhạc
+                    function playAudio() {
+                        if (galaxyData.song.startsWith('http')) {
+                            audio.src = galaxyData.song;
+                            console.log('Sử dụng URL nhạc trực tiếp:', galaxyData.song);
+                        } else {
+                            const songPath = galaxyData.song.startsWith('songs/') ? 
+                                galaxyData.song : 
+                                `songs/${galaxyData.song}`;
+                            audio.src = songPath;
+                            console.log('Sử dụng file nhạc local:', songPath);
+                        }
 
-                    // Hàm load audio
-                    async function loadAudio() {
-                        try {
-                            if (galaxyData.song.startsWith('http')) {
-                                audio.src = galaxyData.song;
-                                console.log('Sử dụng URL nhạc trực tiếp:', galaxyData.song);
-                            } else {
-                                const songPath = galaxyData.song.startsWith('songs/') ? 
-                                    galaxyData.song : 
-                                    `songs/${galaxyData.song}`;
-                                audio.src = songPath;
-                                console.log('Sử dụng file nhạc local:', songPath);
-                            }
-
-                            // Load audio vào buffer
-                            const response = await fetch(audio.src);
-                            const arrayBuffer = await response.arrayBuffer();
-                            audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                            isAudioLoaded = true;
-                            console.log('Đã load xong audio buffer');
-
-                            // Tạo source từ buffer
-                            const source = audioContext.createBufferSource();
-                            source.buffer = audioBuffer;
-                            source.connect(audioContext.destination);
-                            source.loop = true;
-
-                            // Thử phát nhạc
-                            if (audioContext.state === 'suspended') {
-                                await audioContext.resume();
-                            }
-                            source.start(0);
-                            console.log('Đã bắt đầu phát nhạc');
-
-                        } catch (error) {
-                            console.error('Lỗi khi load audio:', error);
-                            showPlayButton();
+                        const playPromise = audio.play();
+                        if (playPromise !== undefined) {
+                            playPromise.then(() => {
+                                console.log('Phát nhạc thành công');
+                            }).catch(error => {
+                                console.log('Không thể tự động phát nhạc:', error);
+                                showPlayButton();
+                            });
                         }
                     }
 
@@ -515,34 +490,25 @@ document.addEventListener('touchend', () => {
                         playButton.style.zIndex = '1000';
                         playButton.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
                         
-                        playButton.onclick = async () => {
-                            if (isAudioLoaded) {
-                                if (audioContext.state === 'suspended') {
-                                    await audioContext.resume();
-                                }
-                                const source = audioContext.createBufferSource();
-                                source.buffer = audioBuffer;
-                                source.connect(audioContext.destination);
-                                source.loop = true;
-                                source.start(0);
-                            }
+                        playButton.onclick = () => {
+                            playAudio();
                             playButton.remove();
                         };
                         
                         document.body.appendChild(playButton);
                     }
 
-                    // Bắt đầu load audio ngay khi có tương tác đầu tiên
-                    let hasStartedLoading = false;
+                    // Bắt đầu phát nhạc khi có tương tác đầu tiên
+                    let hasStartedPlaying = false;
                     const userInteractionEvents = ['click', 'touchstart', 'touchend', 'keydown'];
                     userInteractionEvents.forEach(event => {
                         document.addEventListener(event, () => {
-                            if (!hasStartedLoading) {
-                                hasStartedLoading = true;
-                                loadAudio();
-                                // Xóa event listeners sau khi đã load
+                            if (!hasStartedPlaying) {
+                                hasStartedPlaying = true;
+                                playAudio();
+                                // Xóa event listeners sau khi đã phát
                                 userInteractionEvents.forEach(e => {
-                                    document.removeEventListener(e, loadAudio);
+                                    document.removeEventListener(e, playAudio);
                                 });
                             }
                         }, { once: true });
