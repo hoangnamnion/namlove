@@ -460,6 +460,12 @@ document.addEventListener('touchend', () => {
                     // Hàm load audio
                     async function loadAudio() {
                         try {
+                            // Kiểm tra nếu đã có nhạc đang phát thì dừng ngay
+                            if (currentAudioSource) {
+                                console.log('Đã có nhạc đang phát, dừng nhạc mới');
+                                return;
+                            }
+
                             if (galaxyData.song.startsWith('http')) {
                                 audio.src = galaxyData.song;
                                 console.log('Sử dụng URL nhạc trực tiếp:', galaxyData.song);
@@ -506,7 +512,11 @@ document.addEventListener('touchend', () => {
 
                     // Hàm phát nhạc thông thường (fallback)
                     function playNormalAudio() {
-                        if (!audio.paused) return; // Kiểm tra nếu đang phát thì không phát nữa
+                        // Kiểm tra nếu đã có nhạc đang phát thì dừng ngay
+                        if (!audio.paused) {
+                            console.log('Đã có nhạc đang phát, dừng nhạc mới');
+                            return;
+                        }
                         
                         const playPromise = audio.play();
                         if (playPromise !== undefined) {
@@ -539,6 +549,12 @@ document.addEventListener('touchend', () => {
                         playButton.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
                         
                         playButton.onclick = async () => {
+                            // Kiểm tra nếu đã có nhạc đang phát thì dừng ngay
+                            if (currentAudioSource || !audio.paused) {
+                                console.log('Đã có nhạc đang phát, dừng nhạc mới');
+                                return;
+                            }
+
                             if (isAudioLoaded) {
                                 if (audioContext.state === 'suspended') {
                                     await audioContext.resume();
