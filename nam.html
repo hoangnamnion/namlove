@@ -719,7 +719,7 @@ document.addEventListener('touchend', () => {
             let startY = -150;
             let endY = window.innerHeight + 150;
             // Giảm tốc độ di chuyển của ảnh
-            const thisParticleSpeed = particleSpeedMultiplier * 1;
+            const thisParticleSpeed = particleSpeedMultiplier * 0.8;
 
             function animateParticle(timestamp) {
                 if (!startTime) startTime = timestamp;
