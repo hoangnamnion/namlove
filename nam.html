@@ -207,6 +207,7 @@
             z-index: 2;
             backface-visibility: visible;
             transform-style: preserve-3d;
+            transform: translateZ(0);
         }
 
         /* Mobile specific styles */
@@ -441,98 +442,129 @@ document.addEventListener('touchend', () => {
                 console.log('Đang cố gắng phát nhạc:', galaxyData.song);
                 
                 try {
-                    if (galaxyData.song.startsWith('http')) {
-                        audio.src = galaxyData.song;
-                        console.log('Sử dụng URL nhạc trực tiếp:', galaxyData.song);
-                    } else {
-                        const songPath = galaxyData.song.startsWith('songs/') ? 
-                            galaxyData.song : 
-                            `songs/${galaxyData.song}`;
-                        audio.src = songPath;
-                        console.log('Sử dụng file nhạc local:', songPath);
-                    }
-
-                    audio.style.display = 'none';
-                    audio.controls = false;
+                    // Tạo audio context để tối ưu hóa
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    const audioContext = new AudioContext();
+                    
+                    // Cấu hình audio để load nhanh hơn
                     audio.preload = 'auto';
                     audio.loop = true;
+                    audio.autoplay = true;
+                    audio.controls = false;
+                    audio.style.display = 'none';
 
-                    // Thêm event listeners cho audio
-                    audio.addEventListener('canplaythrough', () => {
-                        console.log('Audio đã sẵn sàng để phát');
-                    });
+                    // Tạo buffer để cache audio
+                    let audioBuffer = null;
+                    let isAudioLoaded = false;
 
-                    audio.addEventListener('playing', () => {
-                        console.log('Audio đang phát');
-                    });
+                    // Hàm load audio
+                    async function loadAudio() {
+                        try {
+                            if (galaxyData.song.startsWith('http')) {
+                                audio.src = galaxyData.song;
+                                console.log('Sử dụng URL nhạc trực tiếp:', galaxyData.song);
+                            } else {
+                                const songPath = galaxyData.song.startsWith('songs/') ? 
+                                    galaxyData.song : 
+                                    `songs/${galaxyData.song}`;
+                                audio.src = songPath;
+                                console.log('Sử dụng file nhạc local:', songPath);
+                            }
 
-                    audio.addEventListener('pause', () => {
-                        console.log('Audio đã tạm dừng');
-                    });
+                            // Load audio vào buffer
+                            const response = await fetch(audio.src);
+                            const arrayBuffer = await response.arrayBuffer();
+                            audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                            isAudioLoaded = true;
+                            console.log('Đã load xong audio buffer');
 
-                    audio.addEventListener('ended', () => {
-                        console.log('Audio đã kết thúc');
-                    });
+                            // Tạo source từ buffer
+                            const source = audioContext.createBufferSource();
+                            source.buffer = audioBuffer;
+                            source.connect(audioContext.destination);
+                            source.loop = true;
 
-                    audio.addEventListener('error', (e) => {
-                        console.error('Lỗi khi load nhạc:', e);
-                        console.error('Đường dẫn nhạc:', audio.src);
-                        console.error('Trạng thái lỗi:', audio.error);
-                    });
+                            // Thử phát nhạc
+                            if (audioContext.state === 'suspended') {
+                                await audioContext.resume();
+                            }
+                            source.start(0);
+                            console.log('Đã bắt đầu phát nhạc');
 
-                    // Xử lý phát nhạc trên mobile
-                    const playAudio = () => {
+                        } catch (error) {
+                            console.error('Lỗi khi load audio:', error);
+                            // Fallback về cách phát thông thường
+                            playNormalAudio();
+                        }
+                    }
+
+                    // Hàm phát nhạc thông thường (fallback)
+                    function playNormalAudio() {
                         const playPromise = audio.play();
                         if (playPromise !== undefined) {
                             playPromise.then(() => {
-                                console.log('Phát nhạc thành công');
+                                console.log('Phát nhạc thành công (fallback)');
                             }).catch(error => {
                                 console.log('Không thể tự động phát nhạc:', error);
-                                // Hiển thị nút play
-                                const playButton = document.createElement('button');
-                                playButton.innerHTML = '🎵 Phát nhạc';
-                                playButton.style.position = 'fixed';
-                                playButton.style.bottom = '20px';
-                                playButton.style.left = '50%';
-                                playButton.style.transform = 'translateX(-50%)';
-                                playButton.style.padding = '10px 20px';
-                                playButton.style.background = 'linear-gradient(45deg, #ff6b9d, #4ecdc4)';
-                                playButton.style.color = 'white';
-                                playButton.style.border = 'none';
-                                playButton.style.borderRadius = '25px';
-                                playButton.style.fontFamily = 'Orbitron, sans-serif';
-                                playButton.style.fontWeight = 'bold';
-                                playButton.style.cursor = 'pointer';
-                                playButton.style.zIndex = '1000';
-                                playButton.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-                                
-                                playButton.onclick = () => {
-                                    audio.play().then(() => {
-                                        playButton.remove();
-                                    }).catch(error => {
-                                        console.error('Lỗi khi phát nhạc:', error);
-                                    });
-                                };
-                                
-                                document.body.appendChild(playButton);
+                                showPlayButton();
                             });
                         }
-                    };
+                    }
 
-                    // Thử phát nhạc khi người dùng tương tác
+                    // Hàm hiển thị nút play
+                    function showPlayButton() {
+                        const playButton = document.createElement('button');
+                        playButton.innerHTML = '🎵 Phát nhạc';
+                        playButton.style.position = 'fixed';
+                        playButton.style.bottom = '20px';
+                        playButton.style.left = '50%';
+                        playButton.style.transform = 'translateX(-50%)';
+                        playButton.style.padding = '10px 20px';
+                        playButton.style.background = 'linear-gradient(45deg, #ff6b9d, #4ecdc4)';
+                        playButton.style.color = 'white';
+                        playButton.style.border = 'none';
+                        playButton.style.borderRadius = '25px';
+                        playButton.style.fontFamily = 'Orbitron, sans-serif';
+                        playButton.style.fontWeight = 'bold';
+                        playButton.style.cursor = 'pointer';
+                        playButton.style.zIndex = '1000';
+                        playButton.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+                        
+                        playButton.onclick = async () => {
+                            if (isAudioLoaded) {
+                                if (audioContext.state === 'suspended') {
+                                    await audioContext.resume();
+                                }
+                                const source = audioContext.createBufferSource();
+                                source.buffer = audioBuffer;
+                                source.connect(audioContext.destination);
+                                source.loop = true;
+                                source.start(0);
+                            } else {
+                                playNormalAudio();
+                            }
+                            playButton.remove();
+                        };
+                        
+                        document.body.appendChild(playButton);
+                    }
+
+                    // Bắt đầu load audio ngay khi có tương tác đầu tiên
                     const userInteractionEvents = ['click', 'touchstart', 'touchend', 'keydown'];
                     userInteractionEvents.forEach(event => {
                         document.addEventListener(event, () => {
-                            playAudio();
-                            // Xóa event listeners sau khi đã phát
+                            loadAudio();
+                            // Xóa event listeners sau khi đã load
                             userInteractionEvents.forEach(e => {
-                                document.removeEventListener(e, playAudio);
+                                document.removeEventListener(e, loadAudio);
                             });
                         }, { once: true });
                     });
 
                 } catch (error) {
                     console.error('Lỗi khi xử lý nhạc:', error);
+                    // Fallback về cách phát thông thường
+                    playNormalAudio();
                 }
             }
 
@@ -606,7 +638,7 @@ document.addEventListener('touchend', () => {
                                   progress > 0.95 ? (1 - progress) * 20 : 
                                   depthOpacity;
                     
-                    element.style.transform = `translate3d(0, ${currentY}px, ${zPos}px) rotateY(180deg)`;
+                    element.style.transform = `translate3d(0, ${currentY}px, ${zPos}px)`;
                     element.style.opacity = opacity;
                     
                     requestAnimationFrame(animateParticle);
@@ -675,7 +707,7 @@ document.addEventListener('touchend', () => {
                                   progress > 0.95 ? (1 - progress) * 20 : 
                                   depthOpacity;
                     
-                    element.style.transform = `translate3d(0, ${currentY}px, ${zPos}px) rotateY(180deg)`;
+                    element.style.transform = `translate3d(0, ${currentY}px, ${zPos}px)`;
                     element.style.opacity = opacity;
                     
                     requestAnimationFrame(animateParticle);
