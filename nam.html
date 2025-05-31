@@ -207,7 +207,6 @@
             z-index: 2;
             backface-visibility: visible;
             transform-style: preserve-3d;
-            transform: translateZ(0);
         }
 
         /* Mobile specific styles */
@@ -500,6 +499,8 @@ document.addEventListener('touchend', () => {
 
                     // Hàm phát nhạc thông thường (fallback)
                     function playNormalAudio() {
+                        if (!audio.paused) return; // Kiểm tra nếu đang phát thì không phát nữa
+                        
                         const playPromise = audio.play();
                         if (playPromise !== undefined) {
                             playPromise.then(() => {
@@ -550,14 +551,18 @@ document.addEventListener('touchend', () => {
                     }
 
                     // Bắt đầu load audio ngay khi có tương tác đầu tiên
+                    let hasStartedLoading = false;
                     const userInteractionEvents = ['click', 'touchstart', 'touchend', 'keydown'];
                     userInteractionEvents.forEach(event => {
                         document.addEventListener(event, () => {
-                            loadAudio();
-                            // Xóa event listeners sau khi đã load
-                            userInteractionEvents.forEach(e => {
-                                document.removeEventListener(e, loadAudio);
-                            });
+                            if (!hasStartedLoading) {
+                                hasStartedLoading = true;
+                                loadAudio();
+                                // Xóa event listeners sau khi đã load
+                                userInteractionEvents.forEach(e => {
+                                    document.removeEventListener(e, loadAudio);
+                                });
+                            }
                         }, { once: true });
                     });
 
@@ -638,7 +643,7 @@ document.addEventListener('touchend', () => {
                                   progress > 0.95 ? (1 - progress) * 20 : 
                                   depthOpacity;
                     
-                    element.style.transform = `translate3d(0, ${currentY}px, ${zPos}px)`;
+                    element.style.transform = `translate3d(0, ${currentY}px, ${zPos}px) rotateY(0deg)`;
                     element.style.opacity = opacity;
                     
                     requestAnimationFrame(animateParticle);
@@ -685,7 +690,7 @@ document.addEventListener('touchend', () => {
 
             const xPos = Math.random() * 100;
             const zPos = (Math.random() - 0.5) * (isMobile ? 300 : 500);
-            const animationDuration = Math.random() * 2 + (isMobile ? 3 : 3);
+            const animationDuration = Math.random() * 2 + (isMobile ? 5 : 6);
             
             element.style.left = xPos + '%';
             
@@ -695,7 +700,7 @@ document.addEventListener('touchend', () => {
             let startTime = null;
             let startY = -150;
             let endY = window.innerHeight + 150;
-            const thisParticleSpeed = particleSpeedMultiplier;
+            const thisParticleSpeed = particleSpeedMultiplier * 0.7;
 
             function animateParticle(timestamp) {
                 if (!startTime) startTime = timestamp;
@@ -707,7 +712,7 @@ document.addEventListener('touchend', () => {
                                   progress > 0.95 ? (1 - progress) * 20 : 
                                   depthOpacity;
                     
-                    element.style.transform = `translate3d(0, ${currentY}px, ${zPos}px)`;
+                    element.style.transform = `translate3d(0, ${currentY}px, ${zPos}px) rotateY(0deg)`;
                     element.style.opacity = opacity;
                     
                     requestAnimationFrame(animateParticle);
