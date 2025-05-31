@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chào Mừng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: 'Orbitron', sans-serif;
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ff6b9d, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 20px;
+        }
+        
+        .welcome-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .welcome-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            color: #4ecdc4;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #ff6b9d, #4ecdc4);
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            margin: 0.5rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 107, 157, 0.4);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .feature {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature h3 {
+            color: #ff6b9d;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        
+        .feature p {
+            color: #4ecdc4;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+                white-space: normal;
+                line-height: 1.3;
+            }
+            
+            .welcome-container {
+                padding: 1.5rem;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .price-tag {
+            display: inline-block;
+            background: linear-gradient(45deg, #050505, #ff6b9d);
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-weight: 900;
+            font-size: 1.5rem;
+            margin-top: 15px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            animation: glow 1.5s ease-in-out infinite alternate;
+            border: 2px solid #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            letter-spacing: 1px;
+            transform-origin: center;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 20px rgba(255, 0, 0, 0.5),
+                           0 0 30px rgba(255, 107, 157, 0.5);
+                transform: scale(1);
+            }
+            to {
+                box-shadow: 0 0 30px rgba(255, 0, 0, 0.8),
+                           0 0 40px rgba(255, 107, 157, 0.8);
+                transform: scale(1.05);
+            }
+        }
+
+        .price-tag:hover {
+            animation: none;
+            transform: scale(1.1);
+            box-shadow: 0 0 40px rgba(223, 199, 199, 0.8),
+                       0 0 50px rgba(253, 215, 228, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Chào Mừng Đến Với WEB HOÀNG NAM </h1>
+            <p class="welcome-text">Nơi gửi gắm những lời yêu thương vào vũ trụ <br>
+            <span class="price-tag">Giá 25.000 1 vũ trụ tình yêu</span></p>
+        </div>
+        
+        <div class="welcome-container">
+            <div class="buttons" style="text-align: center;">
+                <a href="demo.html" class="btn">Xem Demo </a>
+                <a href="https://www.facebook.com/cao.vannam.26042k5" class="btn">Liên Hệ để Tạo </a>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <h3>✨ Tạo Galaxy</h3>
+                    <p>Tạo những thông điệp yêu thương độc đáo với nhiều biểu tượng và màu sắc</p>
+                </div>
+                <div class="feature">
+                    <h3>🎵 Âm Nhạc</h3>
+                    <p>Thêm những bài hát ý nghĩa để làm Galaxy của bạn thêm sinh động</p>
+                </div>
+                <div class="feature">
+                    <h3>🖼️ Hình Ảnh</h3>
+                    <p>Chia sẻ những khoảnh khắc đẹp qua hình ảnh trong Galaxy của bạn</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Thêm hiệu ứng hover cho các feature
+            const features = document.querySelectorAll('.feature');
+            features.forEach(feature => {
+                feature.addEventListener('mouseenter', () => {
+                    feature.style.transform = 'translateY(-5px)';
+                    feature.style.boxShadow = '0 10px 20px rgba(0,0,0,0.2)';
+                });
+                
+                feature.addEventListener('mouseleave', () => {
+                    feature.style.transform = 'translateY(0)';
+                    feature.style.boxShadow = 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
