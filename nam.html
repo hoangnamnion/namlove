@@ -454,6 +454,8 @@ document.addEventListener('touchend', () => {
 
                     audio.style.display = 'none';
                     audio.controls = false;
+                    audio.preload = 'auto';
+                    audio.loop = true;
 
                     // Thêm event listeners cho audio
                     audio.addEventListener('canplaythrough', () => {
@@ -478,9 +480,55 @@ document.addEventListener('touchend', () => {
                         console.error('Trạng thái lỗi:', audio.error);
                     });
 
-                    // Thử phát nhạc
-                    audio.play().catch((error) => {
-                        console.log('Tự động phát bị chặn, đợi tương tác người dùng:', error);
+                    // Xử lý phát nhạc trên mobile
+                    const playAudio = () => {
+                        const playPromise = audio.play();
+                        if (playPromise !== undefined) {
+                            playPromise.then(() => {
+                                console.log('Phát nhạc thành công');
+                            }).catch(error => {
+                                console.log('Không thể tự động phát nhạc:', error);
+                                // Hiển thị nút play
+                                const playButton = document.createElement('button');
+                                playButton.innerHTML = '🎵 Phát nhạc';
+                                playButton.style.position = 'fixed';
+                                playButton.style.bottom = '20px';
+                                playButton.style.left = '50%';
+                                playButton.style.transform = 'translateX(-50%)';
+                                playButton.style.padding = '10px 20px';
+                                playButton.style.background = 'linear-gradient(45deg, #ff6b9d, #4ecdc4)';
+                                playButton.style.color = 'white';
+                                playButton.style.border = 'none';
+                                playButton.style.borderRadius = '25px';
+                                playButton.style.fontFamily = 'Orbitron, sans-serif';
+                                playButton.style.fontWeight = 'bold';
+                                playButton.style.cursor = 'pointer';
+                                playButton.style.zIndex = '1000';
+                                playButton.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+                                
+                                playButton.onclick = () => {
+                                    audio.play().then(() => {
+                                        playButton.remove();
+                                    }).catch(error => {
+                                        console.error('Lỗi khi phát nhạc:', error);
+                                    });
+                                };
+                                
+                                document.body.appendChild(playButton);
+                            });
+                        }
+                    };
+
+                    // Thử phát nhạc khi người dùng tương tác
+                    const userInteractionEvents = ['click', 'touchstart', 'touchend', 'keydown'];
+                    userInteractionEvents.forEach(event => {
+                        document.addEventListener(event, () => {
+                            playAudio();
+                            // Xóa event listeners sau khi đã phát
+                            userInteractionEvents.forEach(e => {
+                                document.removeEventListener(e, playAudio);
+                            });
+                        }, { once: true });
                     });
 
                 } catch (error) {
