@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
-    <title>DEV HOANG NAM Tình Yêu Vũ Trụ</title>
+    <title>Dải Ngân Hà 3D - Galaxy Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * {
@@ -66,7 +66,7 @@
             pointer-events: none;
             letter-spacing: 1px;
             will-change: transform, opacity;
-            backface-visibility: visible;
+            backface-visibility: hidden;
             transform: translateZ(0);
         }
 
@@ -201,14 +201,6 @@
             box-shadow: 0 15px 30px rgba(255, 107, 157, 0.4);
         }
 
-        .image-particle {
-            transition: opacity 0.3s;
-            will-change: transform, opacity;
-            z-index: 2;
-            backface-visibility: visible;
-            transform-style: preserve-3d;
-        }
-
         /* Mobile specific styles */
         @media (max-width: 768px) {
             body {
@@ -260,6 +252,15 @@
                 font-size: 12px;
             }
         }
+.image-particle {
+    position: absolute;
+    pointer-events: none;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    z-index: 2;
+    border-radius: 50%; /* Hình tròn */
+    /* Bỏ mask hoặc clip-path nếu có */
+}
     </style>
 </head>
 <body>
@@ -301,7 +302,7 @@
         "Thank you for being my everything 💕",
         "You are my universe ", 
         "There is no other",
-        "You're amazing", 
+        "You’re amazing", 
         "You make my heart smile ", 
         "Love ya! 💖",
         "Honey bunch, you are my everything! ",
@@ -317,7 +318,7 @@
         special: "#ff6b9d",
         heart: "#ff69b4"
     },
-    images: ["https://i.pinimg.com/736x/13/ac/bf/13acbfc402b196ab186a6e0a9bdc18ba.jpg"],
+    images: ["https://res.cloudinary.com/dtxohfp9j/image/upload/v1711878270/ttlh6obhku93le0ckmic.jpg"],
     song: "eyenoselip.mp3",
     createdAt: "2025-05-30T00:00:00.000Z"
 };
@@ -334,7 +335,6 @@
         let lastMouseX = 0;
         let lastMouseY = 0;
         const activeParticles = new Set();
-        let currentAudioSource = null;
 
         // Responsive settings
         const isMobile = window.innerWidth <= 768;
@@ -345,7 +345,7 @@
         const particleInterval = isMobile ? 100 : 120;
         const starCount = isSmallMobile ? 250 : isMobile ? 350 : 500;
 
-        let particleSpeedMultiplier = 1; // 1 là bình thường, >1 là chậm lại
+        let particleSpeedMultiplier = 1.3; // 1 là bình thường, >1 là chậm lại
 
         // Làm chậm khi ấn giữ chuột hoặc giữ tay trên màn hình
 document.addEventListener('mousedown', () => {
@@ -382,9 +382,6 @@ document.addEventListener('touchend', () => {
         document.addEventListener('gestureend', function(e) {
             e.preventDefault();
         });
-
-        // Thêm biến để cache ảnh
-        const imageCache = new Map();
 
         // Load galaxy data from Firebase
         async function loadGalaxyData() {
@@ -433,176 +430,25 @@ document.addEventListener('touchend', () => {
             `;
             document.head.appendChild(style);
 
-            // Preload ảnh trước khi bắt đầu animation
-            preloadImages();
-
             // Phát nhạc nếu có
-            if (galaxyData.song) {
-                const audio = document.getElementById('galaxyAudio');
-                console.log('Đang cố gắng phát nhạc:', galaxyData.song);
-                
-                try {
-                    // Tạo audio context để tối ưu hóa
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    const audioContext = new AudioContext();
-                    
-                    // Cấu hình audio để load nhanh hơn
-                    audio.preload = 'auto';
-                    audio.loop = true;
-                    audio.autoplay = true;
-                    audio.controls = false;
-                    audio.style.display = 'none';
-
-                    // Tạo buffer để cache audio
-                    let audioBuffer = null;
-                    let isAudioLoaded = false;
-
-                    // Hàm load audio
-                    async function loadAudio() {
-                        try {
-                            // Kiểm tra nếu đã có nhạc đang phát thì dừng ngay
-                            if (currentAudioSource) {
-                                console.log('Đã có nhạc đang phát, dừng nhạc mới');
-                                return;
-                            }
-
-                            if (galaxyData.song.startsWith('http')) {
-                                audio.src = galaxyData.song;
-                                console.log('Sử dụng URL nhạc trực tiếp:', galaxyData.song);
-                            } else {
-                                const songPath = galaxyData.song.startsWith('songs/') ? 
-                                    galaxyData.song : 
-                                    `songs/${galaxyData.song}`;
-                                audio.src = songPath;
-                                console.log('Sử dụng file nhạc local:', songPath);
-                            }
-
-                            // Load audio vào buffer
-                            const response = await fetch(audio.src);
-                            const arrayBuffer = await response.arrayBuffer();
-                            audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                            isAudioLoaded = true;
-                            console.log('Đã load xong audio buffer');
-
-                            // Dừng source cũ nếu có
-                            if (currentAudioSource) {
-                                currentAudioSource.stop();
-                                currentAudioSource.disconnect();
-                            }
-
-                            // Tạo source mới từ buffer
-                            currentAudioSource = audioContext.createBufferSource();
-                            currentAudioSource.buffer = audioBuffer;
-                            currentAudioSource.connect(audioContext.destination);
-                            currentAudioSource.loop = true;
-
-                            // Thử phát nhạc
-                            if (audioContext.state === 'suspended') {
-                                await audioContext.resume();
-                            }
-                            currentAudioSource.start(0);
-                            console.log('Đã bắt đầu phát nhạc');
-
-                        } catch (error) {
-                            console.error('Lỗi khi load audio:', error);
-                            // Fallback về cách phát thông thường
-                            playNormalAudio();
-                        }
-                    }
-
-                    // Hàm phát nhạc thông thường (fallback)
-                    function playNormalAudio() {
-                        // Kiểm tra nếu đã có nhạc đang phát thì dừng ngay
-                        if (!audio.paused) {
-                            console.log('Đã có nhạc đang phát, dừng nhạc mới');
-                            return;
-                        }
-                        
-                        const playPromise = audio.play();
-                        if (playPromise !== undefined) {
-                            playPromise.then(() => {
-                                console.log('Phát nhạc thành công (fallback)');
-                            }).catch(error => {
-                                console.log('Không thể tự động phát nhạc:', error);
-                                showPlayButton();
-                            });
-                        }
-                    }
-
-                    // Hàm hiển thị nút play
-                    function showPlayButton() {
-                        const playButton = document.createElement('button');
-                        playButton.innerHTML = '🎵 Phát nhạc';
-                        playButton.style.position = 'fixed';
-                        playButton.style.bottom = '20px';
-                        playButton.style.left = '50%';
-                        playButton.style.transform = 'translateX(-50%)';
-                        playButton.style.padding = '10px 20px';
-                        playButton.style.background = 'linear-gradient(45deg, #ff6b9d, #4ecdc4)';
-                        playButton.style.color = 'white';
-                        playButton.style.border = 'none';
-                        playButton.style.borderRadius = '25px';
-                        playButton.style.fontFamily = 'Orbitron, sans-serif';
-                        playButton.style.fontWeight = 'bold';
-                        playButton.style.cursor = 'pointer';
-                        playButton.style.zIndex = '1000';
-                        playButton.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-                        
-                        playButton.onclick = async () => {
-                            // Kiểm tra nếu đã có nhạc đang phát thì dừng ngay
-                            if (currentAudioSource || !audio.paused) {
-                                console.log('Đã có nhạc đang phát, dừng nhạc mới');
-                                return;
-                            }
-
-                            if (isAudioLoaded) {
-                                if (audioContext.state === 'suspended') {
-                                    await audioContext.resume();
-                                }
-                                
-                                // Dừng source cũ nếu có
-                                if (currentAudioSource) {
-                                    currentAudioSource.stop();
-                                    currentAudioSource.disconnect();
-                                }
-
-                                // Tạo source mới
-                                currentAudioSource = audioContext.createBufferSource();
-                                currentAudioSource.buffer = audioBuffer;
-                                currentAudioSource.connect(audioContext.destination);
-                                currentAudioSource.loop = true;
-                                currentAudioSource.start(0);
-                            } else {
-                                playNormalAudio();
-                            }
-                            playButton.remove();
-                        };
-                        
-                        document.body.appendChild(playButton);
-                    }
-
-                    // Bắt đầu load audio ngay khi có tương tác đầu tiên
-                    let hasStartedLoading = false;
-                    const userInteractionEvents = ['click', 'touchstart', 'touchend', 'keydown'];
-                    userInteractionEvents.forEach(event => {
-                        document.addEventListener(event, () => {
-                            if (!hasStartedLoading) {
-                                hasStartedLoading = true;
-                                loadAudio();
-                                // Xóa event listeners sau khi đã load
-                                userInteractionEvents.forEach(e => {
-                                    document.removeEventListener(e, loadAudio);
-                                });
-                            }
-                        }, { once: true });
-                    });
-
-                } catch (error) {
-                    console.error('Lỗi khi xử lý nhạc:', error);
-                    // Fallback về cách phát thông thường
-                    playNormalAudio();
-                }
-            }
+    if (galaxyData.song) {
+        const audio = document.getElementById('galaxyAudio');
+        if (galaxyData.song.startsWith('http')) {
+            audio.src = galaxyData.song;
+        } else {
+            audio.src = `songs/${galaxyData.song}`;
+        }
+        // Tự động phát thử (sẽ bị chặn trên mobile)
+        audio.play().catch(() => {});
+        // Thêm đoạn này để phát khi user chạm lần đầu
+        const playAudioOnUserGesture = () => {
+            audio.play().catch(() => {});
+            document.removeEventListener('touchstart', playAudioOnUserGesture);
+            document.removeEventListener('click', playAudioOnUserGesture);
+        };
+        document.addEventListener('touchstart', playAudioOnUserGesture);
+        document.addEventListener('click', playAudioOnUserGesture);
+    }
 
             createStars();
             startParticleAnimation();
@@ -648,13 +494,12 @@ document.addEventListener('touchend', () => {
             
             const xPos = Math.random() * 100;
             const zPos = (Math.random() - 0.5) * (isMobile ? 300 : 500);
-            // Tăng thời gian animation cho chữ
-            const animationDuration = Math.random() * 3 + (isMobile ? 8 : 10);
+            const animationDuration = Math.random() * 2 + (isMobile ? 3 : 3);
             
             element.style.left = xPos + '%';
             
-            const baseFontSize = isSmallMobile ? 8 : isMobile ? 12 : 18;
-            const fontSizeVariation = isSmallMobile ? 4 : isMobile ? 5 : 8;
+            const baseFontSize = isSmallMobile ? 8 : isMobile ? 12 : 18; // desktop to hơn
+const fontSizeVariation = isSmallMobile ? 4 : isMobile ? 5 : 8;
             element.style.fontSize = (Math.random() * fontSizeVariation + baseFontSize) + 'px';
             
             const depthOpacity = Math.max(0.4, 1 - Math.abs(zPos) / (isMobile ? 250 : 400));
@@ -663,8 +508,7 @@ document.addEventListener('touchend', () => {
             let startTime = null;
             let startY = -150;
             let endY = window.innerHeight + 150;
-            // Giảm tốc độ di chuyển của chữ
-            const thisParticleSpeed = particleSpeedMultiplier * 0.8;
+            const thisParticleSpeed = particleSpeedMultiplier; // Lưu multiplier tại thời điểm tạo
 
             function animateParticle(timestamp) {
                 if (!startTime) startTime = timestamp;
@@ -676,7 +520,7 @@ document.addEventListener('touchend', () => {
                                   progress > 0.95 ? (1 - progress) * 20 : 
                                   depthOpacity;
                     
-                    element.style.transform = `translate3d(0, ${currentY}px, ${zPos}px) rotateY(0deg)`;
+                    element.style.transform = `translate3d(0, ${currentY}px, ${zPos}px)`;
                     element.style.opacity = opacity;
                     
                     requestAnimationFrame(animateParticle);
@@ -693,119 +537,7 @@ document.addEventListener('touchend', () => {
             requestAnimationFrame(animateParticle);
         }
 
-        function createImageParticle() {
-            if (!galaxyData.images || galaxyData.images.length === 0) return;
-            if (activeParticles.size >= maxParticles) return;
-
-            const imageData = galaxyData.images[Math.floor(Math.random() * galaxyData.images.length)];
-            const element = document.createElement('img');
-            
-            // Sử dụng ảnh đã cache nếu có
-            if (imageCache.has(imageData.base64)) {
-                element.src = imageCache.get(imageData.base64).src;
-            } else {
-                element.src = `data:${imageData.type};base64,${imageData.base64}`;
-            }
-
-            element.className = 'image-particle';
-            element.style.position = 'absolute';
-            element.style.width = (isSmallMobile ? 40 : isMobile ? 60 : 100) + 'px';
-            element.style.height = (isSmallMobile ? 40 : isMobile ? 60 : 100) + 'px';
-            element.style.objectFit = 'cover';
-            element.style.borderRadius = '15px';
-            element.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
-            element.style.pointerEvents = 'none';
-            element.style.transition = 'all 0.3s ease';
-            element.style.willChange = 'transform, opacity';
-            element.style.transformStyle = 'preserve-3d';
-            element.style.backfaceVisibility = 'visible';
-            element.style.transform = 'translateZ(0)';
-
-            const xPos = Math.random() * 100;
-            const zPos = (Math.random() - 0.5) * (isMobile ? 300 : 500);
-            // Tăng thời gian animation cho ảnh
-            const animationDuration = Math.random() * 3 + (isMobile ? 8 : 10);
-            
-            element.style.left = xPos + '%';
-            
-            const depthOpacity = Math.max(0.4, 1 - Math.abs(zPos) / (isMobile ? 250 : 400));
-            element.style.opacity = depthOpacity;
-            
-            let startTime = null;
-            let startY = -150;
-            let endY = window.innerHeight + 150;
-            // Giảm tốc độ di chuyển của ảnh
-            const thisParticleSpeed = particleSpeedMultiplier * 0.8;
-
-            function animateParticle(timestamp) {
-                if (!startTime) startTime = timestamp;
-                const progress = (timestamp - startTime) / (animationDuration * 1000 * thisParticleSpeed);
-                
-                if (progress < 1) {
-                    const currentY = startY + (endY - startY) * progress;
-                    const opacity = progress < 0.05 ? progress * 20 : 
-                                  progress > 0.95 ? (1 - progress) * 20 : 
-                                  depthOpacity;
-                    
-                    element.style.transform = `translate3d(0, ${currentY}px, ${zPos}px) rotateY(0deg)`;
-                    element.style.opacity = opacity;
-                    
-                    requestAnimationFrame(animateParticle);
-                } else {
-                    if (element.parentNode) {
-                        element.parentNode.removeChild(element);
-                        activeParticles.delete(element);
-                    }
-                }
-            }
-            
-            galaxy.appendChild(element);
-            activeParticles.add(element);
-            requestAnimationFrame(animateParticle);
-        }
-
-        // Cập nhật hàm preload ảnh
-        function preloadImages() {
-            if (!galaxyData.images || galaxyData.images.length === 0) return;
-            
-            console.log('Bắt đầu preload ảnh...');
-            const preloadPromises = galaxyData.images.map((imageData, index) => {
-                return new Promise((resolve, reject) => {
-                    if (imageCache.has(imageData.base64)) {
-                        console.log(`Ảnh ${index + 1} đã được cache`);
-                        resolve();
-                        return;
-                    }
-
-                    const img = new Image();
-                    img.onload = () => {
-                        console.log(`Đã load xong ảnh ${index + 1}`);
-                        imageCache.set(imageData.base64, img);
-                        resolve();
-                    };
-                    img.onerror = (error) => {
-                        console.error(`Lỗi khi load ảnh ${index + 1}:`, error);
-                        reject(error);
-                    };
-                    img.src = `data:${imageData.type};base64,${imageData.base64}`;
-                });
-            });
-
-            // Đợi tất cả ảnh load xong
-            Promise.all(preloadPromises)
-                .then(() => {
-                    console.log('Đã load xong tất cả ảnh');
-                    // Bắt đầu animation sau khi load xong
-                    startParticleAnimation();
-                })
-                .catch(error => {
-                    console.error('Lỗi khi preload ảnh:', error);
-                    // Vẫn bắt đầu animation nếu có lỗi
-                    startParticleAnimation();
-                });
-        }
-
-        function createStars() {
+      function createStars() {
             for (let i = 0; i < starCount; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
@@ -838,24 +570,24 @@ document.addEventListener('touchend', () => {
 
         function startParticleAnimation() {
             setInterval(() => {
-                if (galaxyData.images && galaxyData.images.length > 0 && Math.random() < 0.3) {
-                    createImageParticle();
-                } else {
-                    createTextParticle();
-                }
-            }, particleInterval);
+        // 20% xác suất tạo ảnh, còn lại là icon/chữ
+        if (galaxyData.images && galaxyData.images.length > 0 && Math.random() < 0.08) {
+            createImageParticle();
+        } else {
+            createTextParticle();
+        }
+    }, particleInterval);
 
-            // Tạo nhiều particle ban đầu hơn
-            const initialParticles = isMobile ? 30 : 40;
-            for (let i = 0; i < initialParticles; i++) {
-                setTimeout(() => {
-                    if (galaxyData.images && galaxyData.images.length > 0 && Math.random() < 0.3) {
-                        createImageParticle();
-                    } else {
-                        createTextParticle();
-                    }
-                }, i * (particleInterval * 0.6));
+    const initialParticles = isMobile ? 20 : 15;
+    for (let i = 0; i < initialParticles; i++) {
+        setTimeout(() => {
+            if (galaxyData.images && galaxyData.images.length > 0 && Math.random() < 0.08) {
+                createImageParticle();
+            } else {
+                createTextParticle();
             }
+        }, i * (particleInterval * 0.6));
+    }
         }
 
         // Mouse events for desktop
@@ -952,6 +684,55 @@ document.addEventListener('touchend', () => {
 
         // Initialize
         loadGalaxyData();
+
+        function createImageParticle() {
+    if (!galaxyData.images || galaxyData.images.length === 0 || activeParticles.size >= maxParticles) return;
+
+    const img = document.createElement('img');
+    img.src = galaxyData.images[Math.floor(Math.random() * galaxyData.images.length)];
+    img.className = 'text-particle image-particle';
+    img.style.width = (Math.random() * 40 + 60) + 'px'; // 80-120px, to hơn và đẹp hơn
+    img.style.height = 'auto';
+    img.style.borderRadius = '15px';
+    img.style.boxShadow = '0 4px 24px rgba(0,0,0,0.18)';
+    img.style.background = '#fff';
+
+    const xPos = Math.random() * 100;
+    const zPos = (Math.random() - 0.5) * (isMobile ? 300 : 500);
+    const animationDuration = Math.random() * 2 + (isMobile ? 3 : 3);
+
+    img.style.left = xPos + '%';
+
+    let startTime = null;
+    let startY = -150;
+    let endY = window.innerHeight + 150;
+    const thisParticleSpeed = particleSpeedMultiplier;
+
+    function animateParticle(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = (timestamp - startTime) / (animationDuration * 1000 * thisParticleSpeed);
+
+        if (progress < 1) {
+            const currentY = startY + (endY - startY) * progress;
+            const opacity = progress < 0.05 ? progress * 20 :
+                progress > 0.95 ? (1 - progress) * 20 :
+                1;
+            img.style.transform = `translate3d(0, ${currentY}px, ${zPos}px)`;
+            img.style.opacity = opacity;
+
+            requestAnimationFrame(animateParticle);
+        } else {
+            if (img.parentNode) {
+                img.parentNode.removeChild(img);
+                activeParticles.delete(img);
+            }
+        }
+    }
+
+    galaxy.appendChild(img);
+    activeParticles.add(img);
+    requestAnimationFrame(animateParticle);
+}
     </script>
 </body>
 </html>
