@@ -705,7 +705,8 @@ document.addEventListener('touchend', () => {
 
             const xPos = Math.random() * 100;
             const zPos = (Math.random() - 0.5) * (isMobile ? 300 : 500);
-            const animationDuration = Math.random() * 2 + (isMobile ? 5 : 6);
+            // Tăng thời gian animation cho ảnh
+            const animationDuration = Math.random() * 3 + (isMobile ? 8 : 10);
             
             element.style.left = xPos + '%';
             
@@ -715,7 +716,8 @@ document.addEventListener('touchend', () => {
             let startTime = null;
             let startY = -150;
             let endY = window.innerHeight + 150;
-            const thisParticleSpeed = particleSpeedMultiplier * 0.7;
+            // Giảm tốc độ di chuyển của ảnh
+            const thisParticleSpeed = particleSpeedMultiplier * 1;
 
             function animateParticle(timestamp) {
                 if (!startTime) startTime = timestamp;
