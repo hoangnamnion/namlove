@@ -340,7 +340,7 @@
                             <option value="suynghitronganh.mp3">Suy nghĩ trong anh</option>
                             <option value="yeuemhonmoingay.mp3">Yêu em hơn mỗi ngày</option>
                             <option value="phepmau.mp3">Phép màu</option>
-                            <option value="calem.mp3">Cà Lem Remix</option>
+                            <!-- Thêm các bài hát khác ở đây -->
                         </select>
                         <button type="button" id="previewDefaultSongBtn" title="Nghe thử bài hát mặc định"
                         style ="width: 30px;height: 30px ; background: transparent; border: none; cursor: pointer; color: #4ecdc4;">
@@ -351,23 +351,13 @@
                     <button type="button" id="checkSongBtn" style="margin-bottom:0.5rem;">🔊 Check Link Nhạc</button>
                     <audio id="customSongAudio" controls style="display:none;width:100%;margin-top:0.5rem;"></audio>
                 </div>
-
+                
                 <div class="form-group">
-                    <label>Thêm ảnh (tối đa 5 ảnh):</label>
-                    <div style="display: flex; flex-direction: column; gap: 1rem;">
-                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;" id="imagePreviewContainer">
-                            <!-- Ảnh preview sẽ được thêm vào đây -->
-                        </div>
-                        <div style="display: flex; gap: 1rem; align-items: center;">
-                            <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
-                            <button type="button" id="selectImagesBtn" class="btn" style="width: auto; padding: 0.5rem 1rem;">
-                                📸 Chọn ảnh
-                            </button>
-                            <small style="opacity: 0.7;">Ảnh sẽ xuất hiện trong galaxy với hiệu ứng đẹp mắt</small>
-                        </div>
-                    </div>
-                </div>
-
+    <label for="images">Chọn ảnh (tối đa 5 ảnh, PNG/JPG/GIF):</label>
+    <input type="file" id="images" accept="image/*" multiple style="width:100%;margin-bottom:0.5rem;">
+    <div id="imagePreview" style="display:flex;gap:10px;margin-top:10px;"></div>
+</div>
+                
                 <button type="submit" class="btn" id="submitBtn">
                     ✨ Tạo yêu thương
                 </button>
@@ -375,11 +365,11 @@
             
             <div class="loading" id="loading">
                 <div class="loading-spinner"></div>
-                <p>Đang tạo galaxy của bạn...</p>
+                <p>Đang tạo nhé...</p>
             </div>
             
             <div class="result" id="result">
-                <h3>🎉 Galaxy của bạn đã sẵn sàng!</h3>
+                <h3>🎉 Oce rồi đấy!</h3>
                 <p>Chia sẻ link này với bạn bè:</p>
                 <div class="result-link" id="resultLink"></div>
                 <button class="copy-btn" id="copyBtn">📋 Copy Link</button>
@@ -581,37 +571,115 @@
         });
     });
     
+async function uploadImageToCloudinary(file) {
+    const url = `https://api.cloudinary.com/v1_1/dtxohfp9j/image/upload`;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'dear_love'); // Đúng với preset bạn đã tạo
 
+    const response = await fetch(url, {
+        method: 'POST',
+        body: formData
+    });
+    const data = await response.json();
+    return data.secure_url;
+}
+
+    // Xử lý form submit
+    document.getElementById('galaxyForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        
+        submitBtn.disabled = true;
+        loading.style.display = 'block';
+        result.style.display = 'none';
+        
+        try {
+            const messages = document.getElementById('messages').value
+                .split('\n')
+                .filter(msg => msg.trim() !== '')
+                .map(msg => msg.trim());
+            
+            let icons = selectedIcons;
+            if (customIconsInput.value.trim() !== "") {
+                icons = customIconsInput.value.split(",").map(i => i.trim()).filter(i => i !== "");
+            }
+
+            // Upload ảnh lên Cloudinary
+    let imageUrls = [];
+    if (imagesInput.files.length > 0) {
+        const uploadPromises = Array.from(imagesInput.files).slice(0, 5).map(file => uploadImageToCloudinary(file));
+        imageUrls = await Promise.all(uploadPromises);
+    }
+
+            const galaxyData = {
+                messages: messages,
+                icons: icons,
+                colors: {
+                    love: document.getElementById('loveColor').value,
+                    birthday: document.getElementById('birthdayColor').value,
+                    date: document.getElementById('dateColor').value,
+                    special: document.getElementById('specialColor').value,
+                    heart: document.getElementById('heartColor').value
+                },
+                song: customSongUrl.value.trim() !== '' ? customSongUrl.value.trim() : songSelect.value,
+                 images: imageUrls,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Lưu vào Firebase
+            const docRef = await addDoc(collection(db, "galaxies"), galaxyData);
+            const galaxyId = docRef.id;
+            
+            // Tạo link
+            const galaxyUrl = `${window.location.origin}/nam.html?id=${galaxyId}`;
+            
+            // Hiện kết quả
+            loading.style.display = 'none';
+            result.style.display = 'block';
+            
+            document.getElementById('resultLink').textContent = galaxyUrl;
+            document.getElementById('viewBtn').href = galaxyUrl;
+            
+            // Xử lý copy link
+            document.getElementById('copyBtn').addEventListener('click', () => {
+                navigator.clipboard.writeText(galaxyUrl).then(() => {
+                    const copyBtn = document.getElementById('copyBtn');
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = '✅ Đã copy!';
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                    }, 2000);
+                });
+            });
+            const heartQRBtn = document.getElementById('heartQRBtn');
+heartQRBtn.onclick = function() {
+    // Chuyển sang heartqr.html và truyền link qua query string
+    window.location.href = `heartqr.html?qr=${encodeURIComponent(galaxyUrl)}`;
+};
+
+            
+            // Tạo QR code với hiệu ứng trái tim
+            await createHeartQR(galaxyUrl);
+            
+        } catch (error) {
+            console.error('Lỗi khi tạo galaxy:', error);
+            loading.style.display = 'none';
+            alert('Có lỗi xảy ra. Vui lòng thử lại!');
+        }
+        
+        submitBtn.disabled = false;
+    });
     
-    // Xử lý bài hát
+    // Xử lý bài hát (giữ nguyên code cũ)
     const songSelect = document.getElementById('song');
     const customSongUrl = document.getElementById('customSongUrl');
     const checkSongBtn = document.getElementById('checkSongBtn');
     const customSongAudio = document.getElementById('customSongAudio');
     const previewDefaultSongBtn = document.getElementById('previewDefaultSongBtn');
-
-    // Danh sách bài hát có sẵn
-    const availableSongs = [
-
-        { value: 'happy-birthday.mp3', label: 'Happy Birthday' },
-        { value: 'happybirtday_uia.mp3', label: 'Happy Birthday Mèo U I A' },
-        { value: 'happybirthday_domixi.mp3', label: 'Happy Birthday Độ Mixi' },
-        { value: 'eyenoselip.mp3', label: 'Eyes, Nose, Lips' },
-        { value: 'anhnangcuaanh.mp3', label: 'Anh nắng của anh' },
-        { value: 'suynghitronganh.mp3', label: 'Suy nghĩ trong anh' },
-        { value: 'yeuemhonmoingay.mp3', label: 'Yêu em hơn mỗi ngày' },
-        { value: 'phepmau.mp3', label: 'Phép màu' },
-        { value: 'calem.mp3', label: 'Cà Lem Remix' }
-    ];
-
-    // Cập nhật select box với danh sách bài hát
-    songSelect.innerHTML = '<option value="" selected>-- Chọn một bài hát có sẵn --</option>';
-    availableSongs.forEach(song => {
-        const option = document.createElement('option');
-        option.value = song.value;
-        option.textContent = song.label;
-        songSelect.appendChild(option);
-    });
 
     songSelect.addEventListener('change', () => {
         if (songSelect.value) {
@@ -655,274 +723,21 @@
         });
     });
 
-    // Xử lý upload ảnh
-    const imageInput = document.getElementById('imageInput');
-    const selectImagesBtn = document.getElementById('selectImagesBtn');
-    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-    const maxImages = 5;
-    let selectedImages = [];
-    const imageCache = new Map();
+const imagesInput = document.getElementById('images');
+const imagePreview = document.getElementById('imagePreview');
 
-    // Hàm resize ảnh trước khi chuyển sang base64
-    async function resizeImage(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    
-                    // Giới hạn kích thước tối đa
-                    const MAX_WIDTH = 800;
-                    const MAX_HEIGHT = 800;
-                    
-                    if (width > height) {
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
-                    } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
-                        }
-                    }
-                    
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Chuyển sang base64 với chất lượng 0.8
-                    const base64 = canvas.toDataURL(file.type, 0.8);
-                    resolve(base64);
-                };
-                img.onerror = reject;
-                img.src = e.target.result;
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
-
-    // Hàm chuyển đổi ảnh sang base64
-    async function convertToBase64(file) {
-        try {
-            // Kiểm tra cache
-            if (imageCache.has(file.name)) {
-                console.log('Sử dụng ảnh từ cache:', file.name);
-                return imageCache.get(file.name);
-            }
-
-            // Resize và nén ảnh
-            const base64String = await resizeImage(file);
-            const base64Data = base64String.split(',')[1];
-            
-            // Lưu vào cache
-            imageCache.set(file.name, base64Data);
-            
-            return base64Data;
-        } catch (error) {
-            console.error('Lỗi khi xử lý ảnh:', error);
-            throw error;
-        }
-    }
-
-    selectImagesBtn.addEventListener('click', () => {
-        imageInput.click();
+imagesInput.addEventListener('change', () => {
+    imagePreview.innerHTML = '';
+    Array.from(imagesInput.files).slice(0, 5).forEach(file => {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.style.width = '60px';
+        img.style.height = '60px';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '10px';
+        imagePreview.appendChild(img);
     });
-
-    imageInput.addEventListener('change', async (e) => {
-        const files = Array.from(e.target.files);
-        
-        // Kiểm tra số lượng ảnh
-        if (selectedImages.length + files.length > maxImages) {
-            alert(`Bạn chỉ có thể thêm tối đa ${maxImages} ảnh!`);
-            return;
-        }
-
-        // Hiển thị loading
-        const loadingOverlay = document.createElement('div');
-        loadingOverlay.style.position = 'fixed';
-        loadingOverlay.style.top = '0';
-        loadingOverlay.style.left = '0';
-        loadingOverlay.style.width = '100%';
-        loadingOverlay.style.height = '100%';
-        loadingOverlay.style.background = 'rgba(0, 0, 0, 0.7)';
-        loadingOverlay.style.display = 'flex';
-        loadingOverlay.style.justifyContent = 'center';
-        loadingOverlay.style.alignItems = 'center';
-        loadingOverlay.style.zIndex = '1000';
-        loadingOverlay.innerHTML = '<div style="color: white; text-align: center;"><div class="loading-spinner"></div><p>Đang xử lý ảnh...</p></div>';
-        document.body.appendChild(loadingOverlay);
-
-        try {
-            for (const file of files) {
-                if (file.type.startsWith('image/')) {
-                    try {
-                        // Chuyển đổi và resize ảnh
-                        const base64String = await convertToBase64(file);
-                        
-                        // Tạo preview
-                        const img = document.createElement('img');
-                        img.src = `data:${file.type};base64,${base64String}`;
-                        img.style.width = '100px';
-                        img.style.height = '100px';
-                        img.style.objectFit = 'cover';
-                        img.style.borderRadius = '10px';
-                        img.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
-
-                        const container = document.createElement('div');
-                        container.style.position = 'relative';
-                        container.style.display = 'inline-block';
-
-                        const removeBtn = document.createElement('button');
-                        removeBtn.innerHTML = '×';
-                        removeBtn.style.position = 'absolute';
-                        removeBtn.style.top = '-10px';
-                        removeBtn.style.right = '-10px';
-                        removeBtn.style.background = '#ff4444';
-                        removeBtn.style.color = 'white';
-                        removeBtn.style.border = 'none';
-                        removeBtn.style.borderRadius = '50%';
-                        removeBtn.style.width = '24px';
-                        removeBtn.style.height = '24px';
-                        removeBtn.style.cursor = 'pointer';
-                        removeBtn.style.display = 'flex';
-                        removeBtn.style.alignItems = 'center';
-                        removeBtn.style.justifyContent = 'center';
-                        removeBtn.style.fontSize = '16px';
-                        removeBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-
-                        removeBtn.onclick = () => {
-                            const index = selectedImages.findIndex(img => img.base64 === base64String);
-                            if (index > -1) {
-                                selectedImages.splice(index, 1);
-                                imageCache.delete(file.name);
-                            }
-                            container.remove();
-                        };
-
-                        container.appendChild(img);
-                        container.appendChild(removeBtn);
-                        imagePreviewContainer.appendChild(container);
-                        
-                        // Lưu thông tin ảnh
-                        selectedImages.push({
-                            base64: base64String,
-                            type: file.type
-                        });
-                    } catch (error) {
-                        console.error('Lỗi khi xử lý ảnh:', error);
-                        alert('Có lỗi xảy ra khi xử lý ảnh. Vui lòng thử lại!');
-                    }
-                }
-            }
-        } finally {
-            // Xóa loading overlay
-            loadingOverlay.remove();
-        }
-    });
-
-    // Cập nhật xử lý form submit
-    document.getElementById('galaxyForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById('submitBtn');
-        const loading = document.getElementById('loading');
-        const result = document.getElementById('result');
-        
-        submitBtn.disabled = true;
-        loading.style.display = 'block';
-        result.style.display = 'none';
-        
-        try {
-            const messages = document.getElementById('messages').value
-                .split('\n')
-                .filter(msg => msg.trim() !== '')
-                .map(msg => msg.trim());
-            
-            let icons = selectedIcons;
-            if (customIconsInput.value.trim() !== "") {
-                icons = customIconsInput.value.split(",").map(i => i.trim()).filter(i => i !== "");
-            }
-
-            // Xử lý bài hát
-            let songPath = '';
-            if (customSongUrl.value.trim() !== '') {
-                songPath = customSongUrl.value.trim();
-            } else if (songSelect.value) {
-                songPath = `songs/${songSelect.value}`;
-            }
-
-            // Lưu ảnh vào Firebase Realtime Database
-            const imageData = selectedImages.map(img => ({
-                base64: img.base64,
-                type: img.type
-            }));
-
-            const galaxyData = {
-                messages: messages,
-                icons: icons,
-                colors: {
-                    love: document.getElementById('loveColor').value,
-                    birthday: document.getElementById('birthdayColor').value,
-                    date: document.getElementById('dateColor').value,
-                    special: document.getElementById('specialColor').value,
-                    heart: document.getElementById('heartColor').value
-                },
-                song: songPath,
-                images: selectedImages.map(img => ({
-                    base64: img.base64,
-                    type: img.type
-                })),
-                createdAt: new Date().toISOString()
-            };
-            
-            // Lưu vào Firebase
-            const docRef = await addDoc(collection(db, "galaxies"), galaxyData);
-            const galaxyId = docRef.id;
-            
-            // Tạo link
-            const galaxyUrl = `${window.location.origin}/nam.html?id=${galaxyId}`;
-            
-            // Hiện kết quả
-            loading.style.display = 'none';
-            result.style.display = 'block';
-            
-            document.getElementById('resultLink').textContent = galaxyUrl;
-            document.getElementById('viewBtn').href = galaxyUrl;
-            
-            // Xử lý copy link
-            document.getElementById('copyBtn').addEventListener('click', () => {
-                navigator.clipboard.writeText(galaxyUrl).then(() => {
-                    const copyBtn = document.getElementById('copyBtn');
-                    const originalText = copyBtn.textContent;
-                    copyBtn.textContent = '✅ Đã copy!';
-                    setTimeout(() => {
-                        copyBtn.textContent = originalText;
-                    }, 2000);
-                });
-            });
-
-            const heartQRBtn = document.getElementById('heartQRBtn');
-            heartQRBtn.onclick = function() {
-                window.location.href = `heartqr.html?qr=${encodeURIComponent(galaxyUrl)}`;
-            };
-            
-            // Tạo QR code với hiệu ứng trái tim
-            await createHeartQR(galaxyUrl);
-            
-        } catch (error) {
-            console.error('Lỗi khi tạo galaxy:', error);
-            loading.style.display = 'none';
-            alert('Có lỗi xảy ra. Vui lòng thử lại!');
-        }
-        
-        submitBtn.disabled = false;
-    });
+});
 </script>
     <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
 </body>
