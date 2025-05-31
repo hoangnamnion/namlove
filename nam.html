@@ -492,23 +492,7 @@ document.addEventListener('touchend', () => {
 
                         } catch (error) {
                             console.error('Lỗi khi load audio:', error);
-                            // Fallback về cách phát thông thường
-                            playNormalAudio();
-                        }
-                    }
-
-                    // Hàm phát nhạc thông thường (fallback)
-                    function playNormalAudio() {
-                        if (!audio.paused) return; // Kiểm tra nếu đang phát thì không phát nữa
-                        
-                        const playPromise = audio.play();
-                        if (playPromise !== undefined) {
-                            playPromise.then(() => {
-                                console.log('Phát nhạc thành công (fallback)');
-                            }).catch(error => {
-                                console.log('Không thể tự động phát nhạc:', error);
-                                showPlayButton();
-                            });
+                            showPlayButton();
                         }
                     }
 
@@ -541,8 +525,6 @@ document.addEventListener('touchend', () => {
                                 source.connect(audioContext.destination);
                                 source.loop = true;
                                 source.start(0);
-                            } else {
-                                playNormalAudio();
                             }
                             playButton.remove();
                         };
@@ -568,8 +550,7 @@ document.addEventListener('touchend', () => {
 
                 } catch (error) {
                     console.error('Lỗi khi xử lý nhạc:', error);
-                    // Fallback về cách phát thông thường
-                    playNormalAudio();
+                    showPlayButton();
                 }
             }
 
