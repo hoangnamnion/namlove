@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
-    <title>Dải Ngân Hà 3D - Galaxy Generator</title>
+    <title>DEV HOÀNG NAM - Vũ Trụ Tình Yêu</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * {
@@ -49,12 +49,13 @@
             transform-style: preserve-3d;
             transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg) scale(1);
             will-change: transform;
+            -webkit-transform-style: preserve-3d;
         }
 
         .text-particle {
             position: absolute;
             color: #fff;
-            font-size: 14px;
+            font-size: 24px;
             font-weight: 600;
             white-space: nowrap;
             text-shadow: 
@@ -66,8 +67,10 @@
             pointer-events: none;
             letter-spacing: 1px;
             will-change: transform, opacity;
-            backface-visibility: hidden;
+            backface-visibility: visible;
             transform: translateZ(0);
+            -webkit-transform-style: preserve-3d;
+            -webkit-backface-visibility: visible;
         }
 
         .text-particle.love {
@@ -201,12 +204,6 @@
             box-shadow: 0 15px 30px rgba(255, 107, 157, 0.4);
         }
 
-        .image-particle {
-            transition: opacity 0.3s;
-            will-change: transform, opacity;
-            z-index: 2;
-        }
-
         /* Mobile specific styles */
         @media (max-width: 768px) {
             body {
@@ -218,7 +215,7 @@
             }
             
             .text-particle {
-                font-size: 12px;
+                font-size: 20px;
                 letter-spacing: 0.5px;
             }
             
@@ -234,7 +231,7 @@
 
         @media (max-width: 480px) {
             .text-particle {
-                font-size: 10px;
+                font-size: 18px;
                 letter-spacing: 0.3px;
             }
             
@@ -258,6 +255,60 @@
                 font-size: 12px;
             }
         }
+
+        .love-counter {
+            position: fixed;
+            top: 65%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 8px 15px;
+            border-radius: 10px;
+            text-align: center;
+            color: #ff6b9d;
+            font-family: 'Orbitron', sans-serif;
+            z-index: 100;
+            box-shadow: 0 0 10px rgba(255, 107, 157, 0.3);
+            border: 1px solid rgba(255, 107, 157, 0.3);
+        }
+
+        .love-counter h2 {
+            font-size: 12px;
+            margin-bottom: 2px;
+            text-shadow: 0 0 5px rgba(255, 107, 157, 0.5);
+        }
+
+        .love-counter .days {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff69b4;
+            text-shadow: 0 0 8px rgba(255, 105, 180, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .love-counter {
+                padding: 6px 12px;
+            }
+            .love-counter h2 {
+                font-size: 10px;
+            }
+            .love-counter .days {
+                font-size: 16px;
+            }
+        }
+
+        .image-particle {
+            position: absolute;
+            pointer-events: none;
+            will-change: transform, opacity;
+            backface-visibility: visible;
+            z-index: 2;
+            border-radius: 50%;
+            transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
+            -webkit-backface-visibility: visible;
+        }
     </style>
 </head>
 <body>
@@ -280,6 +331,12 @@
 
     <audio id="galaxyAudio" controls style="display:none"></audio>
 
+    <div class="love-counter">
+        <h2>Chúng ta đã yêu nhau</h2>
+        <div class="days" id="loveDays">0</div>
+        <h2>ngày</h2>
+    </div>
+
     <script type="module">
         import { db, doc, getDoc } from './firebase-config.js';
 
@@ -288,36 +345,34 @@
         const galaxyId = urlParams.get('id');
         const isDemo = urlParams.get('demo') === '1';
 
+
         const demoGalaxyData = {
-            messages: [
-                "Happy Birthday",
-                "I love you",
-                "Chúc mừng sinh nhật",
-                "Yêu em nhiều lắm",
-                "Thank you for being my sunshine",
-                "You are my universe",
-                "You make my heart smile",
-                "Love ya!",
-                "Honey bunch, you are my everything!",
-                "Our Anniversary",
-                "26/04/2005",
-                "Giá 25.000",
-                "Bảo Hành Chọn đời"
-            ],
-            icons: ["♥", "💖", "💕", "💗", "❤️", "💝"],
-            colors: {
-                love: "#ff6b9d",
-                birthday: "#4ecdc4",
-                date: "#c534ed",
-                special: "#f34bce",
-                heart: "#ff69b4"
-            },
-            images: [
-                "https://i.pinimg.com/736x/13/ac/bf/13acbfc402b196ab186a6e0a9bdc18ba.jpg",
-                "https://i.pinimg.com/736x/13/ac/bf/13acbfc402b196ab186a6e0a9bdc18ba.jpg"
-            ],
-            song: "song/eyenoselip.mp3"
-        };
+    messages: [
+        "cục dàng❤️",
+        "chúc em 1/6 vui vẻ❤️",
+        "yêu em",
+        "CAO VĂN VĂM",
+        "moahh moahhh",
+        "baabiiiii",
+        "anh yêu em",
+        "Giá 30.000 đ",
+        "em bé dễ thương của anhh"
+    ],
+    icons: ["♥", "💖", "❤️", "💕", "💗", "💓", "💘", "💝", "💞", "💟"],
+    colors: {
+        love: "#ff6b9d",
+        birthday: "#4ecdc4",
+        date: "#ff69b4",
+        special: "#ff6b9d",
+        heart: "#ff69b4"
+    },
+    images: [
+                    "https://i.pinimg.com/736x/13/ac/bf/13acbfc402b196ab186a6e0a9bdc18ba.jpg",
+                    "https://i.pinimg.com/736x/13/ac/bf/13acbfc402b196ab186a6e0a9bdc18ba.jpg"
+    ],
+    song: "./songs/love2.mp3",
+    createdAt: new Date().toISOString()
+};
 
         const loadingScreen = document.getElementById('loadingScreen');
         const errorScreen = document.getElementById('errorScreen');
@@ -341,22 +396,22 @@
         const particleInterval = isMobile ? 100 : 120;
         const starCount = isSmallMobile ? 250 : isMobile ? 350 : 500;
 
-        let particleSpeedMultiplier = 1; // 1 là bình thường, >1 là chậm lại
+        let particleSpeedMultiplier = 1.3; // 1 là bình thường, >1 là chậm lại
 
         // Làm chậm khi ấn giữ chuột hoặc giữ tay trên màn hình
-        document.addEventListener('mousedown', () => {
-            particleSpeedMultiplier = 1.7;
-        });
-        document.addEventListener('mouseup', () => {
-            particleSpeedMultiplier = 1;
-        });
-        document.addEventListener('touchstart', (e) => {
-            // Chỉ làm chậm khi chỉ có 1 ngón (không phải pinch zoom)
-            if (e.touches.length === 1) particleSpeedMultiplier = 1.7;
-        });
-        document.addEventListener('touchend', () => {
-            particleSpeedMultiplier = 1;
-        });
+document.addEventListener('mousedown', () => {
+    particleSpeedMultiplier = 1.7;
+});
+document.addEventListener('mouseup', () => {
+    particleSpeedMultiplier = 1;
+});
+document.addEventListener('touchstart', (e) => {
+    // Chỉ làm chậm khi chỉ có 1 ngón (không phải pinch zoom)
+    if (e.touches.length === 1) particleSpeedMultiplier = 1.7;
+});
+document.addEventListener('touchend', () => {
+    particleSpeedMultiplier = 1;
+});
 
         // Prevent scrolling and zooming
         document.addEventListener('touchmove', function(e) {
@@ -381,6 +436,7 @@
 
         // Load galaxy data from Firebase
         async function loadGalaxyData() {
+            // Luôn sử dụng dữ liệu mẫu
             galaxyData = demoGalaxyData;
             initializeGalaxy();
         }
@@ -405,43 +461,20 @@
             document.head.appendChild(style);
 
             // Phát nhạc nếu có
-            if (galaxyData.song) {
-                const audio = document.getElementById('galaxyAudio');
-                audio.src = galaxyData.song;
-                audio.loop = true; // Thêm loop để nhạc phát liên tục
-                audio.volume = 0.5; // Đặt âm lượng mặc định
-                
-                // Thêm sự kiện để phát nhạc khi người dùng tương tác
-                const playAudioOnUserGesture = () => {
-                    audio.play().catch(error => {
-                        console.log('Lỗi phát nhạc:', error);
-                    });
-                };
-                
-                // Thêm sự kiện click và touch để phát nhạc
-                document.addEventListener('click', playAudioOnUserGesture, { once: true });
-                document.addEventListener('touchstart', playAudioOnUserGesture, { once: true });
-                
-                // Thêm nút điều khiển nhạc
-                const musicControl = document.createElement('div');
-                musicControl.style.position = 'fixed';
-                musicControl.style.bottom = '20px';
-                musicControl.style.right = '20px';
-                musicControl.style.zIndex = '1000';
-                musicControl.style.background = 'rgba(0,0,0,0.5)';
-                musicControl.style.padding = '10px';
-                musicControl.style.borderRadius = '50px';
-                musicControl.style.cursor = 'pointer';
-                musicControl.innerHTML = '🎵';
-                musicControl.onclick = () => {
-                    if (audio.paused) {
-                        audio.play();
-                    } else {
-                        audio.pause();
-                    }
-                };
-                document.body.appendChild(musicControl);
-            }
+    if (galaxyData.song) {
+        const audio = document.getElementById('galaxyAudio');
+        audio.src = galaxyData.song;
+        // Tự động phát thử (sẽ bị chặn trên mobile)
+        audio.play().catch(() => {});
+        // Thêm đoạn này để phát khi user chạm lần đầu
+        const playAudioOnUserGesture = () => {
+            audio.play().catch(() => {});
+            document.removeEventListener('touchstart', playAudioOnUserGesture);
+            document.removeEventListener('click', playAudioOnUserGesture);
+        };
+        document.addEventListener('touchstart', playAudioOnUserGesture);
+        document.addEventListener('click', playAudioOnUserGesture);
+    }
 
             createStars();
             startParticleAnimation();
@@ -492,7 +525,7 @@
             element.style.left = xPos + '%';
             
             const baseFontSize = isSmallMobile ? 8 : isMobile ? 12 : 18; // desktop to hơn
-            const fontSizeVariation = isSmallMobile ? 4 : isMobile ? 5 : 8;
+const fontSizeVariation = isSmallMobile ? 4 : isMobile ? 5 : 8;
             element.style.fontSize = (Math.random() * fontSizeVariation + baseFontSize) + 'px';
             
             const depthOpacity = Math.max(0.4, 1 - Math.abs(zPos) / (isMobile ? 250 : 400));
@@ -530,58 +563,7 @@
             requestAnimationFrame(animateParticle);
         }
 
-        function createImageParticle() {
-            if (!galaxyData.images || galaxyData.images.length === 0) return;
-            if (activeParticles.size >= maxParticles) return;
-
-            const imgUrl = galaxyData.images[Math.floor(Math.random() * galaxyData.images.length)];
-            const element = document.createElement('img');
-            element.src = imgUrl;
-            element.className = 'image-particle';
-            element.style.position = 'absolute';
-            element.style.width = (isSmallMobile ? 32 : isMobile ? 40 : 68) + 'px';
-            element.style.height = (isSmallMobile ? 32 : isMobile ? 40 : 68) + 'px';
-            element.style.objectFit = 'cover';
-            element.style.borderRadius = '12px';
-            element.style.boxShadow = '0 0 20px #fff8, 0 2px 8px #000a';
-            element.style.pointerEvents = 'none';
-
-            const xPos = Math.random() * 100;
-            const zPos = (Math.random() - 0.5) * (isMobile ? 300 : 500);
-            const animationDuration = Math.random() * 2 + (isMobile ? 3 : 3);
-
-            element.style.left = xPos + '%';
-
-            let startTime = null;
-            let startY = -100;
-            let endY = window.innerHeight + 100;
-            const thisParticleSpeed = particleSpeedMultiplier; // Lưu multiplier tại thời điểm tạo
-
-            function animateParticle(timestamp) {
-                if (!startTime) startTime = timestamp;
-                const progress = (timestamp - startTime) / (animationDuration * 1000 * thisParticleSpeed);
-
-                if (progress < 1) {
-                    const currentY = startY + (endY - startY) * progress;
-                    const opacity = progress < 0.05 ? progress * 20 :
-                            progress > 0.95 ? (1 - progress) * 20 : 1;
-            element.style.transform = `translate3d(0, ${currentY}px, ${zPos}px)`;
-            element.style.opacity = opacity;
-            requestAnimationFrame(animateParticle);
-                } else {
-                    if (element.parentNode) {
-                        element.parentNode.removeChild(element);
-                        activeParticles.delete(element);
-                    }
-                }
-            }
-
-            galaxy.appendChild(element);
-            activeParticles.add(element);
-            requestAnimationFrame(animateParticle);
-        }
-
-        function createStars() {
+      function createStars() {
             for (let i = 0; i < starCount; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
@@ -615,17 +597,17 @@
         function startParticleAnimation() {
             setInterval(() => {
         // 20% xác suất tạo ảnh, còn lại là icon/chữ
-        if (galaxyData.images && galaxyData.images.length > 0 && Math.random() < 0.2) {
+        if (galaxyData.images && galaxyData.images.length > 0 && Math.random() < 0.08) {
             createImageParticle();
         } else {
             createTextParticle();
         }
     }, particleInterval);
 
-    const initialParticles = isMobile ? 25 : 20;
+    const initialParticles = isMobile ? 20 : 15;
     for (let i = 0; i < initialParticles; i++) {
         setTimeout(() => {
-            if (galaxyData.images && galaxyData.images.length > 0 && Math.random() < 0.2) {
+            if (galaxyData.images && galaxyData.images.length > 0 && Math.random() < 0.08) {
                 createImageParticle();
             } else {
                 createTextParticle();
@@ -728,6 +710,69 @@
 
         // Initialize
         loadGalaxyData();
+
+        function createImageParticle() {
+    if (!galaxyData.images || galaxyData.images.length === 0 || activeParticles.size >= maxParticles) return;
+
+    const img = document.createElement('img');
+    img.src = galaxyData.images[Math.floor(Math.random() * galaxyData.images.length)];
+    img.className = 'text-particle image-particle';
+    img.style.width = (Math.random() * 40 + 60) + 'px'; // 80-120px, to hơn và đẹp hơn
+    img.style.height = 'auto';
+    img.style.borderRadius = '15px';
+    img.style.boxShadow = '0 4px 24px rgba(0,0,0,0.18)';
+    img.style.background = '#fff';
+
+    const xPos = Math.random() * 100;
+    const zPos = (Math.random() - 0.5) * (isMobile ? 300 : 500);
+    const animationDuration = Math.random() * 2 + (isMobile ? 3 : 3);
+
+    img.style.left = xPos + '%';
+
+    let startTime = null;
+    let startY = -150;
+    let endY = window.innerHeight + 150;
+    const thisParticleSpeed = particleSpeedMultiplier;
+
+    function animateParticle(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = (timestamp - startTime) / (animationDuration * 1000 * thisParticleSpeed);
+
+        if (progress < 1) {
+            const currentY = startY + (endY - startY) * progress;
+            const opacity = progress < 0.05 ? progress * 20 :
+                progress > 0.95 ? (1 - progress) * 20 :
+                1;
+            img.style.transform = `translate3d(0, ${currentY}px, ${zPos}px)`;
+            img.style.opacity = opacity;
+
+            requestAnimationFrame(animateParticle);
+        } else {
+            if (img.parentNode) {
+                img.parentNode.removeChild(img);
+                activeParticles.delete(img);
+            }
+        }
+    }
+
+    galaxy.appendChild(img);
+    activeParticles.add(img);
+    requestAnimationFrame(animateParticle);
+}
+
+        // Thêm hàm tính số ngày yêu nhau
+        function updateLoveDays() {
+            // Thay đổi ngày bắt đầu yêu nhau ở đây (định dạng: YYYY-MM-DD)
+            const startDate = new Date('2025-05-31'); // Ví dụ: 1/6/2024
+            const today = new Date();
+            const diffTime = today - startDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            document.getElementById('loveDays').textContent = diffDays;
+        }
+
+        // Cập nhật số ngày mỗi giây để hiển thị realtime
+        updateLoveDays();
+        setInterval(updateLoveDays, 1000); // Cập nhật mỗi giây
     </script>
 </body>
 </html>
