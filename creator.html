@@ -354,7 +354,7 @@
                 </div>
                 
                 <div class="form-group">
-    <label for="images">Chọn ảnh (tối đa 5 ảnh, PNG/JPG/GIF):</label>
+    <label for="images">Chọn ảnh (tối đa 10 ảnh, PNG/JPG/GIF):</label>
     <input type="file" id="images" accept="image/*" multiple style="width:100%;margin-bottom:0.5rem;">
     <div id="imagePreview" style="display:flex;gap:10px;margin-top:10px;"></div>
 </div>
@@ -612,7 +612,7 @@ async function uploadImageToCloudinary(file) {
             // Upload ảnh lên Cloudinary
     let imageUrls = [];
     if (imagesInput.files.length > 0) {
-        const uploadPromises = Array.from(imagesInput.files).slice(0, 5).map(file => uploadImageToCloudinary(file));
+        const uploadPromises = Array.from(imagesInput.files).slice(0, 10).map(file => uploadImageToCloudinary(file));
         imageUrls = await Promise.all(uploadPromises);
     }
 
@@ -729,7 +729,7 @@ const imagePreview = document.getElementById('imagePreview');
 
 imagesInput.addEventListener('change', () => {
     imagePreview.innerHTML = '';
-    Array.from(imagesInput.files).slice(0, 5).forEach(file => {
+    Array.from(imagesInput.files).slice(0, 10).forEach(file => {
         const img = document.createElement('img');
         img.src = URL.createObjectURL(file);
         img.style.width = '60px';
