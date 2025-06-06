@@ -421,6 +421,7 @@ document.addEventListener('touchend', () => {
         audio.preload = 'auto';
         audio.muted = false;
         audio.volume = 1.0;
+        audio.loop = true; // Thêm loop để phát liên tục
         
         // Xử lý lỗi phát nhạc
         audio.onerror = (e) => {
@@ -458,6 +459,20 @@ document.addEventListener('touchend', () => {
 
         // Thử phát khi trang đã load xong
         window.addEventListener('load', playAudio);
+
+        // Thêm xử lý khi audio kết thúc
+        audio.addEventListener('ended', () => {
+            if (audio.loop) {
+                audio.play().catch(console.error);
+            }
+        });
+
+        // Thêm xử lý khi trang thay đổi visibility
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && audio.paused) {
+                audio.play().catch(console.error);
+            }
+        });
     }
 
             createStars();
