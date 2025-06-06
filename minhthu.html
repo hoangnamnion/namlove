@@ -310,7 +310,7 @@
     "Em thương Anh nhiều 💕"
     
     ],
-    icons: ["♥", "🎂", "🍰", "🥨", "💗", "🥙", "💘", "💝", "💞", "💟"], 
+    icons: ["♥", "💖", "❤️", "💕", "💗", "💓", "💘", "💝", "💞", "💟"],
     colors: {
         love: "#ff6b9d",
         birthday: "#4ecdc4",
@@ -321,7 +321,7 @@
     images: [
 
     ],
-    song: "./songs/love7.mp3",
+    song: "./songs/love8.mp3",
     createdAt: new Date().toISOString()
 };
 
@@ -421,7 +421,6 @@ document.addEventListener('touchend', () => {
         audio.preload = 'auto';
         audio.muted = false;
         audio.volume = 1.0;
-        audio.loop = true;
         
         // Xử lý lỗi phát nhạc
         audio.onerror = (e) => {
@@ -431,57 +430,34 @@ document.addEventListener('touchend', () => {
         // Hàm phát nhạc với nhiều cách thử khác nhau
         const playAudio = async () => {
             try {
-                // Đảm bảo audio đã được load
-                await audio.load();
-                
                 // Thử phát trực tiếp
-                const playPromise = audio.play();
-                
-                if (playPromise !== undefined) {
-                    playPromise.catch(async (error) => {
-                        console.log('Initial play failed, trying alternative methods...');
-                        
-                        // Thử phát lại sau khi user interaction
-                        try {
-                            // Đặt volume về 0 trước khi phát
-                            audio.volume = 0;
-                            await audio.play();
-                            // Tăng volume dần dần
-                            const fadeIn = setInterval(() => {
-                                if (audio.volume < 1.0) {
-                                    audio.volume = Math.min(1.0, audio.volume + 0.1);
-                                } else {
-                                    clearInterval(fadeIn);
-                                }
-                            }, 100);
-                        } catch (e) {
-                            console.error('Alternative play failed:', e);
-                        }
-                    });
-                }
+                await audio.play();
             } catch (error) {
-                console.error('Audio play error:', error);
+                console.log('Direct play failed, trying alternative methods...');
+                try {
+                    // Thử phát với user interaction
+                    const playPromise = audio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(() => {
+                            // Nếu vẫn thất bại, thử phát lại sau khi load
+                            audio.load();
+                            audio.play().catch(console.error);
+                        });
+                    }
+                } catch (e) {
+                    console.error('All play attempts failed:', e);
+                }
             }
         };
 
         // Thêm nhiều event listeners để tăng khả năng phát thành công
-        const userInteractionEvents = ['click', 'touchstart', 'touchend', 'keydown', 'scroll'];
+        const userInteractionEvents = ['click', 'touchstart', 'touchend', 'keydown'];
         userInteractionEvents.forEach(event => {
             document.addEventListener(event, playAudio, { once: true });
         });
 
         // Thử phát khi trang đã load xong
-        window.addEventListener('load', () => {
-            // Đợi một chút để đảm bảo trang đã load hoàn toàn
-            setTimeout(playAudio, 1000);
-        });
-
-        // Thêm listener cho visibility change
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                playAudio();
-            }
-        });
+        window.addEventListener('load', playAudio);
     }
 
             createStars();
