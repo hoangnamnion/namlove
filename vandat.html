@@ -339,16 +339,16 @@
 
         const demoGalaxyData = {
     messages: [
-    "Nguyễn Thị Khánh Linh❤️",
-    "Anh thích em nhiều lắm 😍",
-    "Em đồng ý làm người yêu anh nhé😍",
-    "Iu em nhất trên đời 😍",
+    "NGÔ THỊ THUỲ LINH❤️",
+    "Anh thích em nhiều lắm 🥰",
+    "Yêu em nhất trên đời 😍",
     "Nhìn em rất dễ thương 😍",
-    "Em nhớ đừng bỏ bữa nhé🥰",
-    "Anh sẽ luôn che chở và bảo vệ em",
+    "Anh sẽ luôn che chở và bảo vệ em suốt đời ",
     "I love you ❤️",
     "❤️❤️❤️❤️❤️❤️❤️❤️❤️",
-    "Nhưng lúc em buồn anh sẽ ở bên em🥰"
+    "Nhưng lúc em buồn anh sẽ ở bên và an ủi em🥰",
+    "Em là người xinh đẹp nhất trong lòng anh❤️",
+    "VĂN ĐẠT❤️THUỲ LINH"
     ],
     icons: ["🫶🏻🫶🏻", "💖", "❤️", "💕", "💗", "💓", "💘", "💝", "💞", "💟","🫶🏻🫶🏻"],
     colors: {
@@ -386,21 +386,20 @@
         const particleInterval = isMobile ? 100 : 120;
         const starCount = isSmallMobile ? 250 : isMobile ? 350 : 500;
 
-        let particleSpeedMultiplier = 1.3; // 1 là bình thường, >1 là chậm lại
+        let particleSpeedMultiplier = 2.6; // 1 là bình thường, >1 là chậm lại
 
         // Làm chậm khi ấn giữ chuột hoặc giữ tay trên màn hình
 document.addEventListener('mousedown', () => {
-    particleSpeedMultiplier = 1.7;
+    particleSpeedMultiplier = 3.4;
 });
 document.addEventListener('mouseup', () => {
-    particleSpeedMultiplier = 1;
+    particleSpeedMultiplier = 2.6;
 });
 document.addEventListener('touchstart', (e) => {
-    // Chỉ làm chậm khi chỉ có 1 ngón (không phải pinch zoom)
-    if (e.touches.length === 1) particleSpeedMultiplier = 1.7;
+    if (e.touches.length === 1) particleSpeedMultiplier = 3.4;
 });
 document.addEventListener('touchend', () => {
-    particleSpeedMultiplier = 1;
+    particleSpeedMultiplier = 2.6;
 });
 
         // Prevent scrolling and zooming
