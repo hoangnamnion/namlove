@@ -49,13 +49,12 @@
             transform-style: preserve-3d;
             transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg) scale(1);
             will-change: transform;
-            -webkit-transform-style: preserve-3d;
         }
 
         .text-particle {
             position: absolute;
             color: #fff;
-            font-size: 24px;
+            font-size: 14px;
             font-weight: 600;
             white-space: nowrap;
             text-shadow: 
@@ -67,10 +66,8 @@
             pointer-events: none;
             letter-spacing: 1px;
             will-change: transform, opacity;
-            backface-visibility: visible;
+            backface-visibility: hidden;
             transform: translateZ(0);
-            -webkit-transform-style: preserve-3d;
-            -webkit-backface-visibility: visible;
         }
 
         .text-particle.love {
@@ -203,7 +200,52 @@
             transform: translateY(-3px);
             box-shadow: 0 15px 30px rgba(255, 107, 157, 0.4);
         }
+        .text-particle {
+    position: absolute;
+    color: #fff;
+    font-size: 24px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-shadow: 
+        0 0 10px currentColor,
+        0 0 20px currentColor,
+        0 0 30px currentColor,
+        2px 2px 4px rgba(0,0,0,0.8);
+    transform-style: flat;
+    pointer-events: none;
+    letter-spacing: 1px;
+    will-change: transform, opacity;
+    backface-visibility: visible;
+    transform: translateZ(0);
+    -webkit-transform-style: flat;
+    -webkit-backface-visibility: visible;
+}
 
+.image-particle {
+    position: absolute;
+    pointer-events: none;
+    will-change: transform, opacity;
+    backface-visibility: visible;
+    z-index: 2;
+    border-radius: 50%;
+    transform-style: flat;
+    -webkit-transform-style: flat;
+    -webkit-backface-visibility: visible;
+}
+
+.galaxy-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg) scale(1);
+    will-change: transform;
+    -webkit-transform-style: preserve-3d;
+    perspective: 1000px;
+    -webkit-perspective: 1000px;
+} 
         /* Mobile specific styles */
         @media (max-width: 768px) {
             body {
@@ -215,7 +257,7 @@
             }
             
             .text-particle {
-                font-size: 20px;
+                font-size: 12px;
                 letter-spacing: 0.5px;
             }
             
@@ -231,7 +273,7 @@
 
         @media (max-width: 480px) {
             .text-particle {
-                font-size: 18px;
+                font-size: 10px;
                 letter-spacing: 0.3px;
             }
             
@@ -255,18 +297,15 @@
                 font-size: 12px;
             }
         }
-
-        .image-particle {
-            position: absolute;
-            pointer-events: none;
-            will-change: transform, opacity;
-            backface-visibility: visible;
-            z-index: 2;
-            border-radius: 50%;
-            transform-style: preserve-3d;
-            -webkit-transform-style: preserve-3d;
-            -webkit-backface-visibility: visible;
-        }
+.image-particle {
+    position: absolute;
+    pointer-events: none;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    z-index: 2;
+    border-radius: 50%; /* Hình tròn */
+    /* Bỏ mask hoặc clip-path nếu có */
+}
     </style>
 </head>
 <body>
@@ -355,26 +394,25 @@
         const isMobile = window.innerWidth <= 768;
         const isSmallMobile = window.innerWidth <= 480;
         // Tăng số lượng particle tối đa
-        const maxParticles = isSmallMobile ? 200 : isMobile ? 300 : 400;
+        const maxParticles = isSmallMobile ? 150 : isMobile ? 200 : 300;
         // Giảm thời gian giữa các lần tạo particle (tăng tần suất)
-        const particleInterval = isMobile ? 80 : 100;
+        const particleInterval = isMobile ? 100 : 120;
         const starCount = isSmallMobile ? 250 : isMobile ? 350 : 500;
 
-        let particleSpeedMultiplier = 1.3; // 1 là bình thường, >1 là chậm lại
+        let particleSpeedMultiplier = 4.6; // 1 là bình thường, >1 là chậm lại
 
         // Làm chậm khi ấn giữ chuột hoặc giữ tay trên màn hình
 document.addEventListener('mousedown', () => {
-    particleSpeedMultiplier = 1.7;
+    particleSpeedMultiplier = 3.4;
 });
 document.addEventListener('mouseup', () => {
-    particleSpeedMultiplier = 1;
+    particleSpeedMultiplier = 2.6;
 });
 document.addEventListener('touchstart', (e) => {
-    // Chỉ làm chậm khi chỉ có 1 ngón (không phải pinch zoom)
-    if (e.touches.length === 1) particleSpeedMultiplier = 1.7;
+    if (e.touches.length === 1) particleSpeedMultiplier = 3.4;
 });
 document.addEventListener('touchend', () => {
-    particleSpeedMultiplier = 1;
+    particleSpeedMultiplier = 2.6;
 });
 
         // Prevent scrolling and zooming
@@ -427,62 +465,22 @@ document.addEventListener('touchend', () => {
             // Phát nhạc nếu có
     if (galaxyData.song) {
         const audio = document.getElementById('galaxyAudio');
-        // Sử dụng đường dẫn tuyệt đối nếu có thể
-        audio.src = galaxyData.song.startsWith('http') ? galaxyData.song : window.location.origin + '/' + galaxyData.song;
-        
-        // Thêm các thuộc tính để tối ưu cho mobile
-        audio.preload = 'auto';
-        audio.muted = false;
-        audio.volume = 1.0;
-        audio.loop = true; // Thêm loop để phát liên tục
-        
-        // Xử lý lỗi phát nhạc
-        audio.onerror = (e) => {
-            console.error('Audio error:', e);
+        audio.src = galaxyData.song;
+        audio.loop = true; // Đảm bảo nhạc phát liên tục
+        // Tự động phát thử (sẽ bị chặn trên mobile)
+        audio.play().catch(() => {});
+        // Thêm đoạn này để phát khi user chạm lần đầu
+        const playAudioOnUserGesture = () => {
+            audio.play().catch(() => {});
+            document.removeEventListener('touchstart', playAudioOnUserGesture);
+            document.removeEventListener('click', playAudioOnUserGesture);
         };
-
-        // Hàm phát nhạc với nhiều cách thử khác nhau
-        const playAudio = async () => {
-            try {
-                // Thử phát trực tiếp
-                await audio.play();
-            } catch (error) {
-                console.log('Direct play failed, trying alternative methods...');
-                try {
-                    // Thử phát với user interaction
-                    const playPromise = audio.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(() => {
-                            // Nếu vẫn thất bại, thử phát lại sau khi load
-                            audio.load();
-                            audio.play().catch(console.error);
-                        });
-                    }
-                } catch (e) {
-                    console.error('All play attempts failed:', e);
-                }
-            }
-        };
-
-        // Thêm nhiều event listeners để tăng khả năng phát thành công
-        const userInteractionEvents = ['click', 'touchstart', 'touchend', 'keydown'];
-        userInteractionEvents.forEach(event => {
-            document.addEventListener(event, playAudio, { once: true });
-        });
-
-        // Thử phát khi trang đã load xong
-        window.addEventListener('load', playAudio);
-
-        // Thêm xử lý khi audio kết thúc
+        document.addEventListener('touchstart', playAudioOnUserGesture);
+        document.addEventListener('click', playAudioOnUserGesture);
+        
+        // Đảm bảo nhạc luôn phát khi kết thúc
         audio.addEventListener('ended', () => {
             if (audio.loop) {
-                audio.play().catch(console.error);
-            }
-        });
-
-        // Thêm xử lý khi trang thay đổi visibility
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && audio.paused) {
                 audio.play().catch(console.error);
             }
         });
@@ -532,12 +530,12 @@ document.addEventListener('touchend', () => {
             
             const xPos = Math.random() * 100;
             const zPos = (Math.random() - 0.5) * (isMobile ? 300 : 500);
-            const animationDuration = Math.random() * 2 + (isMobile ? 3 : 3);
+            const animationDuration = Math.random() * 3 + (isMobile ? 5 : 6);
             
             element.style.left = xPos + '%';
             
-            const baseFontSize = isSmallMobile ? 12 : isMobile ? 16 : 24; // desktop to hơn
-const fontSizeVariation = isSmallMobile ? 6 : isMobile ? 8 : 12;
+            const baseFontSize = isSmallMobile ? 8 : isMobile ? 12 : 18;
+            const fontSizeVariation = isSmallMobile ? 4 : isMobile ? 5 : 8;
             element.style.fontSize = (Math.random() * fontSizeVariation + baseFontSize) + 'px';
             
             const depthOpacity = Math.max(0.4, 1 - Math.abs(zPos) / (isMobile ? 250 : 400));
@@ -546,7 +544,7 @@ const fontSizeVariation = isSmallMobile ? 6 : isMobile ? 8 : 12;
             let startTime = null;
             let startY = -150;
             let endY = window.innerHeight + 150;
-            const thisParticleSpeed = particleSpeedMultiplier; // Lưu multiplier tại thời điểm tạo
+            const thisParticleSpeed = particleSpeedMultiplier * 0.7;
 
             function animateParticle(timestamp) {
                 if (!startTime) startTime = timestamp;
@@ -729,7 +727,7 @@ const fontSizeVariation = isSmallMobile ? 6 : isMobile ? 8 : 12;
     const img = document.createElement('img');
     img.src = galaxyData.images[Math.floor(Math.random() * galaxyData.images.length)];
     img.className = 'text-particle image-particle';
-    img.style.width = (Math.random() * 40 + 60) + 'px'; // 80-120px, to hơn và đẹp hơn
+    img.style.width = (Math.random() * 40 + 60) + 'px';
     img.style.height = 'auto';
     img.style.borderRadius = '15px';
     img.style.boxShadow = '0 4px 24px rgba(0,0,0,0.18)';
@@ -737,14 +735,14 @@ const fontSizeVariation = isSmallMobile ? 6 : isMobile ? 8 : 12;
 
     const xPos = Math.random() * 100;
     const zPos = (Math.random() - 0.5) * (isMobile ? 300 : 500);
-    const animationDuration = Math.random() * 2 + (isMobile ? 3 : 3);
+    const animationDuration = Math.random() * 3 + (isMobile ? 5 : 6);
 
     img.style.left = xPos + '%';
 
     let startTime = null;
     let startY = -150;
     let endY = window.innerHeight + 150;
-    const thisParticleSpeed = particleSpeedMultiplier;
+    const thisParticleSpeed = particleSpeedMultiplier * 0.7;
 
     function animateParticle(timestamp) {
         if (!startTime) startTime = timestamp;
